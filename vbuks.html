@@ -1,151 +1,134 @@
 <!DOCTYPE html>
-<html lang="sl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fortnite Dolgovi</title>
+    <title>Fortnite Dolgi Tracker</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f2f2f2;
-            color: #333;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            background-color: #f4f4f9;
         }
-
         .container {
-            width: 80%;
-            max-width: 600px;
-            background-color: white;
+            width: 90%;
+            max-width: 800px;
+            margin: 2rem auto;
+            background: #fff;
+            border-radius: 10px;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
         h1 {
-            font-size: 2rem;
-            color: #444;
+            text-align: center;
+            color: #333;
         }
-
         form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            margin-bottom: 1rem;
         }
-
         input, button {
             padding: 10px;
-            font-size: 1rem;
-            border-radius: 5px;
+            margin: 5px;
+            font-size: 16px;
             border: 1px solid #ddd;
-            outline: none;
+            border-radius: 5px;
         }
-
-        input:focus, button:focus {
-            border-color: #28a745;
-        }
-
         button {
             background-color: #28a745;
             color: white;
             cursor: pointer;
             border: none;
         }
-
         button:hover {
             background-color: #218838;
         }
-
-        .debt-list {
-            margin-top: 30px;
+        ul {
+            list-style-type: none;
+            padding: 0;
         }
-
-        .debt-item {
-            background-color: #f9f9f9;
+        li {
+            display: flex;
+            justify-content: space-between;
+            background: #f9f9f9;
+            margin-bottom: 10px;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            margin-bottom: 10px;
-            font-size: 1rem;
+        }
+        .remove-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        .remove-btn:hover {
+            background-color: #c82333;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Vnos Fortnite Dolga</h1>
-        </header>
-        
-        <form id="debtForm">
-            <label for="debtorName">Ime Dolžnika:</label>
-            <input type="text" id="debtorName" required>
-
-            <label for="debtAmount">Znesek Dolga (V-bucks):</label>
-            <input type="number" id="debtAmount" required>
-
-            <button type="submit">Shrani Dolg</button>
+        <h1>Fortnite Dolgi Tracker</h1>
+        <form id="debt-form">
+            <input type="text" id="player-name" placeholder="Ime dolžnika" required>
+            <input type="number" id="debt-amount" placeholder="Znesek dolga (V-Bucks)" required>
+            <button type="submit">Dodaj dolg</button>
         </form>
-
-        <div class="debt-list" id="debtList">
-            <!-- Tukaj se bodo prikazali shranjeni dolgi -->
-        </div>
+        <ul id="debt-list"></ul>
     </div>
-
+    
     <script>
-        // Preveri, če so shranjeni dolgi v localStorage
-        document.addEventListener('DOMContentLoaded', function() {
-            loadDebts();
+        const form = document.getElementById('debt-form');
+        const debtList = document.getElementById('debt-list');
+        
+        // Naloži dolgove iz LocalStorage
+        const loadDebts = () => {
+            const debts = JSON.parse(localStorage.getItem('debts')) || [];
+            debts.forEach(debt => addDebtToList(debt));
+        };
+
+        // Shranjevanje dolgov v LocalStorage
+        const saveDebts = () => {
+            const debts = [];
+            debtList.querySelectorAll('li').forEach(item => {
+                const [playerName, debtAmount] = item.textContent.split(' dolguje ');
+                debts.push({ playerName, debtAmount: parseInt(debtAmount) });
+            });
+            localStorage.setItem('debts', JSON.stringify(debts));
+        };
+
+        // Dodajanje dolga na seznam
+        const addDebtToList = (debt) => {
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `
+                ${debt.playerName} dolguje ${debt.debtAmount} V-Bucks
+                <button class="remove-btn">Odstrani</button>
+            `;
+            // Dogodek za odstranitev dolga
+            listItem.querySelector('.remove-btn').addEventListener('click', () => {
+                debtList.removeChild(listItem);
+                saveDebts(); // Posodobi LocalStorage
+            });
+            debtList.appendChild(listItem);
+        };
+
+        // Dodajanje novega dolga
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const playerName = document.getElementById('player-name').value;
+            const debtAmount = document.getElementById('debt-amount').value;
+
+            const newDebt = { playerName, debtAmount: parseInt(debtAmount) };
+            addDebtToList(newDebt);
+            saveDebts(); // Posodobi LocalStorage
+            form.reset(); // Počisti obrazec
         });
 
-        // Funkcija za nalaganje dolgov iz localStorage
-        function loadDebts() {
-            const storedDebts = JSON.parse(localStorage.getItem('debts')) || [];
-            const debtList = document.getElementById('debtList');
-            debtList.innerHTML = ''; // Počisti seznam, preden prikaže nove dolge
-
-            storedDebts.forEach(debt => {
-                const debtItem = document.createElement('div');
-                debtItem.classList.add('debt-item');
-                debtItem.textContent = `${debt.name} dolguje ${debt.amount} V-bucks.`;
-                debtList.appendChild(debtItem);
-            });
-        }
-
-        // Funkcija za shranjevanje novega dolga
-        function addDebt(event) {
-            event.preventDefault();
-
-            const debtorName = document.getElementById('debtorName').value;
-            const debtAmount = document.getElementById('debtAmount').value;
-
-            // Pridobi shranjene dolge iz localStorage
-            const storedDebts = JSON.parse(localStorage.getItem('debts')) || [];
-
-            // Dodaj nov dolg v seznam
-            const newDebt = { name: debtorName, amount: debtAmount };
-            storedDebts.push(newDebt);
-
-            // Shrani dolge nazaj v localStorage
-            localStorage.setItem('debts', JSON.stringify(storedDebts));
-
-            // Počisti obrazec
-            document.getElementById('debtForm').reset();
-
-            // Ponovno naloži seznam dolgov
-            loadDebts();
-        }
-
-        // Dodaj dogodke ob oddaji obrazca
-        document.getElementById('debtForm').addEventListener('submit', addDebt);
+        // Naloži dolgove ob nalaganju strani
+        window.addEventListener('load', loadDebts);
     </script>
 </body>
 </html>
