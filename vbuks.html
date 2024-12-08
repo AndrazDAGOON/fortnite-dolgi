@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fortnite Dolgovi</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f2f2f2;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 600px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #444;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input, button {
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            outline: none;
+        }
+
+        input:focus, button:focus {
+            border-color: #28a745;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .debt-list {
+            margin-top: 30px;
+        }
+
+        .debt-item {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Vnos Fortnite Dolga</h1>
+        </header>
+        
+        <form id="debtForm">
+            <label for="debtorName">Ime Dolžnika:</label>
+            <input type="text" id="debtorName" required>
+
+            <label for="debtAmount">Znesek Dolga (V-bucks):</label>
+            <input type="number" id="debtAmount" required>
+
+            <button type="submit">Shrani Dolg</button>
+        </form>
+
+        <div class="debt-list" id="debtList">
+            <!-- Tukaj se bodo prikazali shranjeni dolgi -->
+        </div>
+    </div>
+
+    <script>
+        // Preveri, če so shranjeni dolgi v localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDebts();
+        });
+
+        // Funkcija za nalaganje dolgov iz localStorage
+        function loadDebts() {
+            const storedDebts = JSON.parse(localStorage.getItem('debts')) || [];
+            const debtList = document.getElementById('debtList');
+            debtList.innerHTML = ''; // Počisti seznam, preden prikaže nove dolge
+
+            storedDebts.forEach(debt => {
+                const debtItem = document.createElement('div');
+                debtItem.classList.add('debt-item');
+                debtItem.textContent = `${debt.name} dolguje ${debt.amount} V-bucks.`;
+                debtList.appendChild(debtItem);
+            });
+        }
+
+        // Funkcija za shranjevanje novega dolga
+        function addDebt(event) {
+            event.preventDefault();
+
+            const debtorName = document.getElementById('debtorName').value;
+            const debtAmount = document.getElementById('debtAmount').value;
+
+            // Pridobi shranjene dolge iz localStorage
+            const storedDebts = JSON.parse(localStorage.getItem('debts')) || [];
+
+            // Dodaj nov dolg v seznam
+            const newDebt = { name: debtorName, amount: debtAmount };
+            storedDebts.push(newDebt);
+
+            // Shrani dolge nazaj v localStorage
+            localStorage.setItem('debts', JSON.stringify(storedDebts));
+
+            // Počisti obrazec
+            document.getElementById('debtForm').reset();
+
+            // Ponovno naloži seznam dolgov
+            loadDebts();
+        }
+
+        // Dodaj dogodke ob oddaji obrazca
+        document.getElementById('debtForm').addEventListener('submit', addDebt);
+    </script>
+</body>
+</html>
